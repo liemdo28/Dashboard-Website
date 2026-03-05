@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Đăng nhập - TaskFlow</title>
+<title>TaskFlow - Hoang Le Team</title>
 
 <link rel="stylesheet" href="<?= APP_URL ?>/assets/css/style.css">
 <link rel="manifest" href="<?= APP_URL ?>/manifest.json">
@@ -137,7 +137,16 @@ body.login-page{
 <div class="login-box">
 
 <div class="logo">
+    
 <h1>Task<span>Flow</span></h1>
+<p class="team-name">Hoang Le Team</p>
+<style>
+.team-name{
+    margin-top:4px;
+    font-size:13px;
+    color:#888;
+}
+
 <p>Đăng nhập để tiếp tục</p>
 </div>
 
