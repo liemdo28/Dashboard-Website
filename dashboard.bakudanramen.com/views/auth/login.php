@@ -52,6 +52,12 @@ body.login-page{
     font-size:14px;
 }
 
+.team-name{
+    margin-top:4px;
+    font-size:13px;
+    color:#888;
+}
+
 .form-group{
     margin-bottom:16px;
 }
@@ -137,16 +143,8 @@ body.login-page{
 <div class="login-box">
 
 <div class="logo">
-    
 <h1>Task<span>Flow</span></h1>
 <p class="team-name">Hoang Le Team</p>
-<style>
-.team-name{
-    margin-top:4px;
-    font-size:13px;
-    color:#888;
-}
-
 <p>Đăng nhập để tiếp tục</p>
 </div>
 

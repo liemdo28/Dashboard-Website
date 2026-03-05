@@ -12,7 +12,7 @@ define('DB_CHARSET', 'utf8mb4');
 
 // Application settings
 define('APP_NAME', 'TaskFlow');
-define('APP_URL', 'http://dashboard.bakudanramen.com/');    // Đổi thành domain thật
+define('APP_URL', 'https://dashboard.bakudanramen.com');    // Đổi thành domain thật
 define('APP_VERSION', '1.0.0');
 define('UPLOAD_DIR', __DIR__ . '/../uploads/');
 define('MAX_UPLOAD_SIZE', 10 * 1024 * 1024); // 10MB

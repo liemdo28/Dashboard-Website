@@ -35,8 +35,7 @@ function ui_due($dueDate) {
 function ui_task_url($taskId) {
   return 'index.php?route=tasks/view&id=' . urlencode($taskId);
 }
-?>
-<?php
+
 $pageTitle = 'Dashboard';
 $currentPage = 'dashboard';
 ob_start();
@@ -46,19 +45,31 @@ ob_start();
 <div class="grid grid-4 mb-4">
     <div class="stat-card">
         <div class="stat-icon red">📁</div>
-        <div><div class="stat-value"><?= $totalProjects ?></div><div class="stat-label">Projects</div></div>
+        <div>
+            <div class="stat-value"><?= $totalProjects ?></div>
+            <div class="stat-label">Projects</div>
+        </div>
     </div>
     <div class="stat-card">
         <div class="stat-icon dark">📋</div>
-        <div><div class="stat-value"><?= $totalTasks ?></div><div class="stat-label">Tổng Tasks</div></div>
+        <div>
+            <div class="stat-value"><?= $totalTasks ?></div>
+            <div class="stat-label">Tổng Tasks</div>
+        </div>
     </div>
     <div class="stat-card">
         <div class="stat-icon green">✅</div>
-        <div><div class="stat-value"><?= $completedTasks ?></div><div class="stat-label">Hoàn thành</div></div>
+        <div>
+            <div class="stat-value"><?= $completedTasks ?></div>
+            <div class="stat-label">Hoàn thành</div>
+        </div>
     </div>
     <div class="stat-card">
         <div class="stat-icon blue">👥</div>
-        <div><div class="stat-value"><?= $totalMembers ?></div><div class="stat-label">Thành viên</div></div>
+        <div>
+            <div class="stat-value"><?= $totalMembers ?></div>
+            <div class="stat-label">Thành viên</div>
+        </div>
     </div>
 </div>
 
@@ -111,32 +122,6 @@ ob_start();
 </div>
 
 <!-- My Tasks -->
-<!-- <div class="card mb-4">
-    <div class="card-header">
-        <h3>📌 Tasks của tôi</h3>
-        <span class="text-muted text-sm"><?= count($myTasks) ?> tasks</span>
-    </div>
-    <div class="card-body" style="padding:0">
-        <?php if (empty($myTasks)): ?>
-            <div class="empty-state"><div class="icon">📝</div><h3>Chưa có task</h3><p>Bạn chưa được gán task nào</p></div>
-        <?php else: ?>
-        <table class="data-table">
-            <thead><tr><th>Task</th><th>Project</th><th>Ưu tiên</th><th>Trạng thái</th><th>Hạn</th></tr></thead>
-            <tbody>
-                <?php foreach ($myTasks as $task): ?>
-                <tr>
-                    <td><a href="<?= APP_URL ?>/tasks/<?= $task['id'] ?>" style="color:var(--text);font-weight:600"><?= e($task['title']) ?></a></td>
-                    <td class="text-muted"><?= e($task['project_name'] ?? '-') ?></td>
-                    <td><span class="tag priority-<?= $task['priority'] ?>"><?= ucfirst($task['priority']) ?></span></td>
-                    <td><span class="badge badge-<?= $task['status'] === 'done' ? 'active' : 'member' ?>"><?= ucfirst(str_replace('_', ' ', $task['status'])) ?></span></td>
-                    <td class="text-sm <?= ($task['due_date'] && $task['due_date'] < date('Y-m-d')) ? 'overdue' : 'text-muted' ?>"><?= $task['due_date'] ? date('d/m/Y', strtotime($task['due_date'])) : '-' ?></td>
-                </tr>
-                <?php endforeach; ?>
-            </tbody>
-        </table>
-        <?php endif; ?>
-    </div>
-</div> -->
 <div class="card mb-4">
     <div class="card-header" style="display:flex;justify-content:space-between;align-items:center">
         <h3>📌 Tasks của tôi</h3>
@@ -144,7 +129,6 @@ ob_start();
     </div>
 
     <div class="card-body">
-
         <?php if (empty($myTasks)): ?>
             <div class="empty-state">
                 <div class="icon">📝</div>
@@ -154,9 +138,7 @@ ob_start();
         <?php else: ?>
 
         <div class="task-card-list">
-
             <?php foreach ($myTasks as $task): ?>
-
                 <?php
                 $status = $task['status'];
                 $priority = $task['priority'];
@@ -169,51 +151,34 @@ ob_start();
                 ?>
 
                 <a class="task-card" href="<?= APP_URL ?>/tasks/<?= $task['id'] ?>">
-
                     <div class="task-main">
-
-                        <div class="task-title">
-                            <?= e($task['title']) ?>
-                        </div>
+                        <div class="task-title"><?= e($task['title']) ?></div>
 
                         <div class="task-meta">
+                            <span class="task-project"><?= e($task['project_name'] ?? '-') ?></span>
 
-                            <span class="task-project">
-                                <?= e($task['project_name'] ?? '-') ?>
+                            <span class="task-priority priority-<?= e($priority) ?>">
+                                <?= e($priorityLabel) ?>
                             </span>
 
-                            <span class="task-priority priority-<?= $priority ?>">
-                                <?= $priorityLabel ?>
-                            </span>
-
-                            <span class="task-status status-<?= $status ?>">
-                                <?= $statusLabel ?>
+                            <span class="task-status status-<?= e($status) ?>">
+                                <?= e($statusLabel) ?>
                             </span>
 
                             <?php if ($due): ?>
-
                                 <span class="task-due <?= $isOverdue ? 'overdue' : '' ?>">
                                     <?= date('d/m/Y', strtotime($due)) ?>
                                 </span>
-
                             <?php endif; ?>
-
                         </div>
-
                     </div>
 
-                    <div class="task-arrow">
-                        →
-                    </div>
-
+                    <div class="task-arrow">→</div>
                 </a>
-
             <?php endforeach; ?>
-
         </div>
 
         <?php endif; ?>
-
     </div>
 </div>
 
@@ -222,6 +187,7 @@ ob_start();
     <h3 style="font-size:15px;font-weight:700">Projects gần đây</h3>
     <a href="<?= APP_URL ?>/projects/create" class="btn btn-primary btn-sm">+ Tạo Project</a>
 </div>
+
 <div class="grid grid-3">
     <?php foreach (array_slice($projects, 0, 6) as $proj):
         $pct = $proj['task_count'] > 0 ? round($proj['completed_count'] / $proj['task_count'] * 100) : 0;
@@ -231,18 +197,19 @@ ob_start();
         <div class="card-content">
             <h3><?= e($proj['name']) ?></h3>
             <p><?= e(mb_substr($proj['description'] ?? 'Chưa có mô tả', 0, 60)) ?></p>
-            <div class="progress-bar"><div class="progress-fill" style="width:<?= $pct ?>%;background:<?= e($proj['color']) ?>"></div></div>
-            <div class="card-footer"><span><?= $pct ?>% hoàn thành</span><span><?= $proj['task_count'] ?> tasks</span></div>
+            <div class="progress-bar">
+                <div class="progress-fill" style="width:<?= $pct ?>%;background:<?= e($proj['color']) ?>"></div>
+            </div>
+            <div class="card-footer">
+                <span><?= $pct ?>% hoàn thành</span>
+                <span><?= $proj['task_count'] ?> tasks</span>
+            </div>
         </div>
     </a>
     <?php endforeach; ?>
 </div>
 
-<?php
-$content = ob_get_clean();
-$headerActions = '<a href="' . APP_URL . '/projects/create" class="btn btn-primary btn-sm">+ Tạo Project</a>';
-require __DIR__ . '/../layouts/main.php';
-
+<!-- (Optional) JS: currently unused because dashboard doesn't have [data-seg="mywork"] -->
 <script>
 (function(){
   const seg = document.querySelector('[data-seg="mywork"]');
@@ -278,15 +245,10 @@ require __DIR__ . '/../layouts/main.php';
       card.style.display = ok ? '' : 'none';
     });
   });
-
-  // Prevent card open when clicking quick buttons
-  document.addEventListener('click', (e)=>{
-    const b = e.target.closest('button[data-action]');
-    if(!b) return;
-    e.preventDefault();
-    e.stopPropagation();
-    // TODO: call your existing endpoint to update status
-    alert('Action: ' + b.dataset.action + ' | Task ID: ' + b.dataset.id);
-  });
 })();
 </script>
+
+<?php
+$content = ob_get_clean();
+$headerActions = '<a href="' . APP_URL . '/projects/create" class="btn btn-primary btn-sm">+ Tạo Project</a>';
+require __DIR__ . '/../layouts/main.php';
