@@ -1,0 +1,867 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Options Strategy Dashboard — Week of Mar 2, 2026</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #0a0e17; color: #e0e6ed; min-height: 100vh; padding: 24px; }
+  .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-bottom: 14px; border-bottom: 1px solid #1e293b; }
+  .header h1 { font-size: 22px; font-weight: 600; color: #f8fafc; }
+  .header .subtitle { font-size: 13px; color: #64748b; margin-top: 4px; }
+  .last-update { font-size: 12px; color: #64748b; text-align: right; }
+  .last-update .time { color: #38bdf8; font-weight: 600; font-size: 14px; }
+
+  .regime-banner { background: linear-gradient(135deg, rgba(250,204,21,0.15), rgba(250,204,21,0.05)); border: 1px solid rgba(250,204,21,0.4); border-radius: 12px; padding: 14px 18px; margin-bottom: 20px; display: flex; align-items: center; gap: 12px; }
+  .regime-banner .icon { font-size: 24px; }
+  .regime-banner .text { flex: 1; }
+  .regime-banner .title { font-size: 14px; font-weight: 700; color: #fbbf24; }
+  .regime-banner .desc { font-size: 12px; color: #94a3b8; margin-top: 3px; line-height: 1.5; }
+
+  .market-strip { display: grid; grid-template-columns: repeat(8, 1fr); gap: 8px; margin-bottom: 20px; }
+  @media (max-width: 900px) { .market-strip { grid-template-columns: repeat(4, 1fr); } }
+  .ms-item { background: #111827; border: 1px solid #1e293b; border-radius: 8px; padding: 8px; text-align: center; }
+  .ms-item .ms-label { font-size: 10px; color: #64748b; text-transform: uppercase; }
+  .ms-item .ms-value { font-size: 15px; font-weight: 700; margin-top: 2px; }
+  .ms-item .ms-chg { font-size: 10px; margin-top: 1px; }
+
+  /* Enhanced Indicator Panel */
+  .indicator-panel { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 20px; }
+  @media (max-width: 900px) { .indicator-panel { grid-template-columns: repeat(2, 1fr); } }
+  .ind-card { background: #111827; border: 1px solid #1e293b; border-radius: 10px; padding: 12px; }
+  .ind-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+  .ind-name { font-size: 10px; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; }
+  .ind-badge { padding: 2px 6px; border-radius: 4px; font-size: 9px; font-weight: 700; text-transform: uppercase; }
+  .ind-bullish { background: rgba(34,197,94,0.15); color: #4ade80; }
+  .ind-bearish { background: rgba(239,68,68,0.15); color: #f87171; }
+  .ind-neutral { background: rgba(250,204,21,0.15); color: #fbbf24; }
+  .ind-value { font-size: 20px; font-weight: 800; color: #f8fafc; }
+  .ind-desc { font-size: 10px; color: #64748b; margin-top: 4px; line-height: 1.4; }
+  .ind-action { font-size: 10px; font-weight: 600; margin-top: 6px; padding: 4px 8px; border-radius: 4px; display: inline-block; }
+
+  .portfolio-bar { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; background: #111827; border: 1px solid #1e293b; border-radius: 12px; padding: 14px 18px; margin-bottom: 20px; }
+  .pf-item { text-align: center; }
+  .pf-item .pf-label { font-size: 10px; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; }
+  .pf-item .pf-value { font-size: 18px; font-weight: 700; color: #f8fafc; margin-top: 2px; }
+
+  .section-title { font-size: 14px; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px solid #1e293b; }
+
+  .alerts-panel { background: #111827; border: 1px solid #1e293b; border-radius: 12px; padding: 18px; margin-bottom: 20px; }
+  .alerts-panel h2 { font-size: 14px; margin-bottom: 10px; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600; }
+  .alert-item { padding: 9px 12px; border-radius: 8px; margin-bottom: 5px; font-size: 12px; display: flex; align-items: center; gap: 8px; line-height: 1.4; }
+  .alert-item:last-child { margin-bottom: 0; }
+  .alert-entry { background: rgba(34,197,94,0.08); border: 1px solid rgba(34,197,94,0.2); color: #4ade80; }
+  .alert-warning { background: rgba(250,204,21,0.08); border: 1px solid rgba(250,204,21,0.2); color: #fbbf24; }
+  .alert-danger { background: rgba(239,68,68,0.08); border: 1px solid rgba(239,68,68,0.2); color: #f87171; }
+  .alert-info { background: rgba(56,189,248,0.08); border: 1px solid rgba(56,189,248,0.2); color: #38bdf8; }
+  .alert-icon { font-size: 14px; flex-shrink: 0; }
+  .alert-time { font-size: 10px; color: #475569; margin-left: auto; flex-shrink: 0; }
+
+  .grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; margin-bottom: 20px; }
+  @media (max-width: 1100px) { .grid { grid-template-columns: 1fr; } }
+
+  .card { background: #111827; border: 1px solid #1e293b; border-radius: 12px; padding: 18px; position: relative; overflow: hidden; }
+  .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
+  .card-title .ticker { font-size: 20px; font-weight: 800; color: #f8fafc; }
+  .card-title .strategy { font-size: 11px; color: #64748b; display: block; margin-top: 2px; }
+  .card-badge { padding: 4px 10px; border-radius: 6px; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
+  .badge-best { background: #166534; color: #4ade80; animation: pulse-g 2s infinite; }
+  .badge-good { background: #164e22; color: #86efac; }
+  .badge-new { background: #1e3a5f; color: #38bdf8; }
+  .badge-wait { background: #713f12; color: #fbbf24; }
+  .badge-dropped { background: #3f3f46; color: #a1a1aa; }
+  @keyframes pulse-g { 0%,100% { box-shadow: 0 0 0 0 rgba(34,197,94,0.4); } 50% { box-shadow: 0 0 10px 3px rgba(34,197,94,0.15); } }
+
+  .sector-tag { display: inline-block; padding: 2px 7px; border-radius: 4px; font-size: 9px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; margin-left: 6px; }
+  .tag-tech { background: rgba(56,189,248,0.15); color: #38bdf8; }
+  .tag-semi { background: rgba(168,85,247,0.15); color: #c084fc; }
+  .tag-crypto { background: rgba(251,146,60,0.15); color: #fb923c; }
+  .tag-cyber { background: rgba(34,197,94,0.15); color: #4ade80; }
+  .tag-ai { background: rgba(236,72,153,0.15); color: #f472b6; }
+
+  .price-block { text-align: center; padding: 10px 0 14px; border-bottom: 1px solid #1e293b; margin-bottom: 12px; }
+  .price-block .price { font-size: 32px; font-weight: 800; color: #f8fafc; letter-spacing: -1px; }
+  .price-block .change { font-size: 13px; font-weight: 600; margin-top: 2px; }
+  .price-up { color: #4ade80; }
+  .price-down { color: #f87171; }
+
+  .conditions { display: flex; flex-direction: column; gap: 5px; margin-bottom: 12px; }
+  .cond-row { display: flex; align-items: center; padding: 7px 10px; border-radius: 7px; font-size: 12px; font-weight: 500; }
+  .cond-pass { background: rgba(34,197,94,0.12); border: 1px solid rgba(34,197,94,0.3); }
+  .cond-pass .cond-icon { color: #4ade80; }
+  .cond-pass .cond-val { color: #4ade80; }
+  .cond-fail { background: rgba(239,68,68,0.10); border: 1px solid rgba(239,68,68,0.3); }
+  .cond-fail .cond-icon { color: #f87171; }
+  .cond-fail .cond-val { color: #f87171; }
+  .cond-wait { background: rgba(250,204,21,0.08); border: 1px solid rgba(250,204,21,0.2); }
+  .cond-wait .cond-icon { color: #fbbf24; }
+  .cond-wait .cond-val { color: #fbbf24; }
+  .cond-icon { width: 20px; font-size: 14px; flex-shrink: 0; text-align: center; }
+  .cond-label { flex: 1; color: #cbd5e1; }
+  .cond-val { font-weight: 700; min-width: 65px; text-align: right; }
+
+  .score-bar { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; padding: 8px 10px; border-radius: 7px; background: #0f172a; }
+  .score-label { font-size: 11px; color: #64748b; text-transform: uppercase; }
+  .score-track { flex: 1; height: 7px; background: #1e293b; border-radius: 4px; overflow: hidden; }
+  .score-fill { height: 100%; border-radius: 4px; }
+  .score-fill-green { background: linear-gradient(90deg, #22c55e, #4ade80); }
+  .score-fill-yellow { background: linear-gradient(90deg, #eab308, #fbbf24); }
+  .score-fill-red { background: linear-gradient(90deg, #dc2626, #f87171); }
+  .score-text { font-size: 13px; font-weight: 700; min-width: 34px; text-align: right; }
+
+  .trade-info { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; padding-top: 10px; border-top: 1px solid #1e293b; }
+  .info-item { font-size: 11px; }
+  .info-label { color: #64748b; }
+  .info-value { color: #e2e8f0; font-weight: 600; }
+  .val-green { color: #4ade80 !important; }
+  .val-red { color: #f87171 !important; }
+  .val-yellow { color: #fbbf24 !important; }
+
+  .card-note { margin-top: 10px; font-size: 11px; padding: 7px 10px; border-radius: 6px; line-height: 1.4; }
+  .note-green { color: #4ade80; background: rgba(34,197,94,0.06); border: 1px solid rgba(34,197,94,0.15); }
+  .note-yellow { color: #fbbf24; background: rgba(250,204,21,0.06); border: 1px solid rgba(250,204,21,0.15); }
+  .note-red { color: #f87171; background: rgba(239,68,68,0.06); border: 1px solid rgba(239,68,68,0.15); }
+  .note-blue { color: #38bdf8; background: rgba(56,189,248,0.06); border: 1px solid rgba(56,189,248,0.15); }
+
+  .dropped-section { background: #111827; border: 1px solid #1e293b; border-radius: 12px; padding: 18px; margin-bottom: 20px; }
+  .dropped-section h2 { font-size: 14px; margin-bottom: 10px; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; }
+  .dropped-row { display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; border-radius: 6px; background: rgba(63,63,70,0.1); border: 1px solid rgba(63,63,70,0.2); margin-bottom: 5px; font-size: 12px; color: #a1a1aa; }
+  .dropped-reason { font-size: 11px; color: #71717a; flex-shrink: 0; margin-left: 12px; }
+
+  /* Entry Criteria Framework */
+  .criteria-panel { background: #111827; border: 1px solid #1e293b; border-radius: 12px; padding: 18px; margin-bottom: 20px; }
+  .criteria-panel h2 { font-size: 14px; margin-bottom: 14px; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px; }
+  .criteria-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  @media (max-width: 900px) { .criteria-grid { grid-template-columns: 1fr; } }
+  .criteria-item { padding: 10px 12px; border-radius: 8px; background: #0f172a; border: 1px solid #1e293b; }
+  .criteria-num { display: inline-block; width: 22px; height: 22px; line-height: 22px; text-align: center; border-radius: 50%; font-size: 11px; font-weight: 800; margin-right: 8px; }
+  .cn-core { background: rgba(34,197,94,0.2); color: #4ade80; }
+  .cn-new { background: rgba(56,189,248,0.2); color: #38bdf8; }
+  .criteria-name { font-size: 12px; font-weight: 700; color: #e2e8f0; }
+  .criteria-rule { font-size: 11px; color: #94a3b8; margin-top: 4px; line-height: 1.4; }
+  .criteria-tag { display: inline-block; padding: 1px 5px; border-radius: 3px; font-size: 9px; font-weight: 600; text-transform: uppercase; margin-left: 6px; }
+  .tag-original { background: rgba(34,197,94,0.1); color: #4ade80; }
+  .tag-enhanced { background: rgba(56,189,248,0.1); color: #38bdf8; }
+
+  .playbook { background: #111827; border: 1px solid #1e293b; border-radius: 12px; padding: 18px; margin-bottom: 20px; }
+  .playbook h2 { font-size: 14px; margin-bottom: 14px; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px; }
+  .pb-row { display: flex; gap: 12px; padding: 8px 0; border-bottom: 1px solid rgba(30,41,59,0.5); }
+  .pb-row:last-child { border-bottom: none; }
+  .pb-day { min-width: 85px; font-size: 12px; font-weight: 700; color: #f8fafc; }
+  .pb-action { font-size: 12px; color: #94a3b8; line-height: 1.4; }
+  .pb-green { color: #4ade80; font-weight: 600; }
+  .pb-yellow { color: #fbbf24; font-weight: 600; }
+  .pb-red { color: #f87171; font-weight: 600; }
+
+  .footer { text-align: center; font-size: 11px; color: #475569; margin-top: 20px; padding-top: 14px; border-top: 1px solid #1e293b; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div>
+    <h1>Options Strategy Monitor</h1>
+    <div class="subtitle">Week of March 2, 2026 &middot; Portfolio: $1,500,000 &middot; Conservative Tier (2% Risk Per Trade)</div>
+  </div>
+  <div class="last-update">
+    <div>Last scan</div>
+    <div class="time">Mar 4, Live (Intraday)</div>
+    <div style="margin-top:3px; font-size:11px;">Adjusted strikes &middot; Public.com live data</div>
+  </div>
+</div>
+
+<!-- Regime Banner — Updated Mar 4 Intraday -->
+<div class="regime-banner" style="background: linear-gradient(135deg, rgba(34,197,94,0.15), rgba(34,197,94,0.05)); border-color: rgba(34,197,94,0.4);">
+  <div class="icon">🟢</div>
+  <div class="text">
+    <div class="title" style="color:#4ade80;">BULLISH SURPRISE — QQQ Gapped UP +0.51% (Futures Were -0.63%)</div>
+    <div class="desc">Market reversed overnight fear. TSLA +2.4%, AMD +1.6%, COIN +9.3%(!). <strong>Put premiums COMPRESSED — strikes need to be TIGHTENED for credit. Naked call premiums FATTENED.</strong> USO $91.03 — still above $90 kill zone. COIN $200C is ⛔ DEAD (stock AT strike).</div>
+  </div>
+</div>
+
+<!-- Enhanced Indicator Panel — Updated Mar 4 Intraday -->
+<div class="indicator-panel">
+  <div class="ind-card">
+    <div class="ind-header">
+      <span class="ind-name">QQQ Live</span>
+      <span class="ind-badge ind-bullish">GAP UP!</span>
+    </div>
+    <div class="ind-value" style="color:#4ade80">+0.51%</div>
+    <div class="ind-desc">$604.49 (was $601.44 close). Futures were -0.63% but buyers reversed at open. Bullish signal.</div>
+    <div class="ind-action" style="background:rgba(34,197,94,0.1); color:#4ade80;">Rally = put premiums compressed</div>
+  </div>
+  <div class="ind-card">
+    <div class="ind-header">
+      <span class="ind-name">CBOE Put/Call Ratio</span>
+      <span class="ind-badge ind-neutral">NEUTRAL</span>
+    </div>
+    <div class="ind-value" style="color:#fbbf24">0.67</div>
+    <div class="ind-desc">Below 0.7 = no extreme fear. Market not panicking despite Iran. Watch for spike &gt;0.85.</div>
+    <div class="ind-action" style="background:rgba(56,189,248,0.1); color:#38bdf8;">Monitor for spike &gt;0.85</div>
+  </div>
+  <div class="ind-card">
+    <div class="ind-header">
+      <span class="ind-name">USO (Oil)</span>
+      <span class="ind-badge ind-bearish">ABOVE $90</span>
+    </div>
+    <div class="ind-value" style="color:#fbbf24">$91.03</div>
+    <div class="ind-desc">Still in $90+ danger zone but pulling back from $91.24. Below $95 kill switch.</div>
+    <div class="ind-action" style="background:rgba(250,204,21,0.1); color:#fbbf24;">Watch — close all if &gt;$95</div>
+  </div>
+  <div class="ind-card">
+    <div class="ind-header">
+      <span class="ind-name">COIN Spike</span>
+      <span class="ind-badge ind-bullish">+9.3%!</span>
+    </div>
+    <div class="ind-value" style="color:#4ade80">$199.40</div>
+    <div class="ind-desc">Monster rally from $182. Old $165P CSP now 17% OTM (too far). Old $200C NC is ATM (dead). Strikes adjusted.</div>
+    <div class="ind-action" style="background:rgba(239,68,68,0.1); color:#f87171;">Adjusted to $185P / $220C</div>
+  </div>
+</div>
+
+<!-- Market Context Strip — Mar 4 Intraday -->
+<div class="market-strip">
+  <div class="ms-item"><div class="ms-label">SPY</div><div class="ms-value" style="color:#4ade80">$680.37</div><div class="ms-chg" style="color:#4ade80">+0.09%</div></div>
+  <div class="ms-item"><div class="ms-label">QQQ</div><div class="ms-value" style="color:#4ade80">$604.49</div><div class="ms-chg" style="color:#4ade80">+0.51%</div></div>
+  <div class="ms-item"><div class="ms-label">TSLA</div><div class="ms-value" style="color:#4ade80">$400.69</div><div class="ms-chg" style="color:#4ade80">+2.4%</div></div>
+  <div class="ms-item"><div class="ms-label">AMD</div><div class="ms-value" style="color:#4ade80">$193.78</div><div class="ms-chg" style="color:#4ade80">+1.6%</div></div>
+  <div class="ms-item"><div class="ms-label">NVDA</div><div class="ms-value" style="color:#4ade80">$181.97</div><div class="ms-chg" style="color:#4ade80">+1.2%</div></div>
+  <div class="ms-item"><div class="ms-label">COIN</div><div class="ms-value" style="color:#4ade80">$199.40</div><div class="ms-chg" style="color:#4ade80">+9.3%!</div></div>
+  <div class="ms-item"><div class="ms-label">PLTR</div><div class="ms-value" style="color:#4ade80">$151.26</div><div class="ms-chg" style="color:#4ade80">+2.6%</div></div>
+  <div class="ms-item"><div class="ms-label">USO</div><div class="ms-value" style="color:#fbbf24">$91.03</div><div class="ms-chg" style="color:#fbbf24">&gt;$90⚠️</div></div>
+</div>
+
+<!-- Portfolio Summary — Updated Mar 4 -->
+<div class="portfolio-bar">
+  <div class="pf-item"><div class="pf-label">Active Trades</div><div class="pf-value">0 / 8</div></div>
+  <div class="pf-item"><div class="pf-label">Sizing</div><div class="pf-value" style="color:#fbbf24">CONSERVATIVE</div></div>
+  <div class="pf-item"><div class="pf-label">Est. Income (all 8)</div><div class="pf-value" style="color:#4ade80">$19,530</div></div>
+  <div class="pf-item"><div class="pf-label">Capital Deployed</div><div class="pf-value" style="color:#fbbf24">$601,000</div></div>
+  <div class="pf-item"><div class="pf-label">Portfolio %</div><div class="pf-value">40.1%</div></div>
+</div>
+
+<!-- Enhanced Entry Criteria Framework — NEW -->
+<div class="criteria-panel">
+  <h2>Enhanced Entry Criteria — 7 Factor Framework</h2>
+  <div class="criteria-grid">
+    <div class="criteria-item">
+      <span class="criteria-num cn-core">1</span>
+      <span class="criteria-name">Price Buffer <span class="criteria-tag tag-original">CORE</span></span>
+      <div class="criteria-rule">Stock price must be above short strike by at least 4%+ OTM. Wider buffer = safer but thinner premium. Sweet spot: 5–9% OTM.</div>
+    </div>
+    <div class="criteria-item">
+      <span class="criteria-num cn-core">2</span>
+      <span class="criteria-name">IV &gt; 50% <span class="criteria-tag tag-original">CORE</span></span>
+      <div class="criteria-rule">Implied volatility must be &gt;50% on the short put. Higher IV = richer credit. Current sweet spot: COIN 114%, AMD 82%, PLTR 96%, CRWD 136%.</div>
+    </div>
+    <div class="criteria-item">
+      <span class="criteria-num cn-core">3</span>
+      <span class="criteria-name">Bid-Ask ≤ $0.05 <span class="criteria-tag tag-original">CORE</span></span>
+      <div class="criteria-rule">Short put bid-ask spread must be ≤$0.05 (tight = liquid). Wider spreads = slippage risk. Reject if &gt;$0.10.</div>
+    </div>
+    <div class="criteria-item">
+      <span class="criteria-num cn-new">4</span>
+      <span class="criteria-name">QQQ Futures Direction <span class="criteria-tag tag-enhanced">NEW</span></span>
+      <div class="criteria-rule"><strong>If futures gap down &gt;0.3%:</strong> wait 30 min after open for stabilization. Premiums will be fatter but need to confirm selling exhaustion. If futures are flat/up, can enter at open.</div>
+    </div>
+    <div class="criteria-item">
+      <span class="criteria-num cn-new">5</span>
+      <span class="criteria-name">Put/Call Ratio <span class="criteria-tag tag-enhanced">NEW</span></span>
+      <div class="criteria-rule"><strong>PCR &gt; 0.85 = favorable</strong> (excessive fear = contrarian bullish for put sellers). Currently 0.67 (not panic yet). PCR &gt; 1.0 = maximum premium opportunity. Check CBOE at open.</div>
+    </div>
+    <div class="criteria-item">
+      <span class="criteria-num cn-new">6</span>
+      <span class="criteria-name">Opening Range Hold <span class="criteria-tag tag-enhanced">NEW</span></span>
+      <div class="criteria-rule"><strong>Stock must hold its first 30-min low.</strong> No new intraday lows after 10:30 AM ET. If price recovers above VWAP = strong bullish signal for entry.</div>
+    </div>
+    <div class="criteria-item">
+      <span class="criteria-num cn-new">7</span>
+      <span class="criteria-name">Volume Exhaustion <span class="criteria-tag tag-enhanced">NEW</span></span>
+      <div class="criteria-rule"><strong>Selling volume in first hour should be LESS than prior day's first hour.</strong> Declining volume on down moves = sellers exhausted. Rising volume on down = avoid entry.</div>
+    </div>
+    <div class="criteria-item" style="border-color: rgba(239,68,68,0.3);">
+      <span class="criteria-num" style="background:rgba(239,68,68,0.2); color:#f87171;">!</span>
+      <span class="criteria-name" style="color:#f87171;">Kill Switch</span>
+      <div class="criteria-rule"><strong>DO NOT ENTER if:</strong> USO &gt; $95 (Iran escalation), VIX &gt; 28 (panic), or stock gaps down &gt;5% intraday. Close ALL existing positions if USO hits $95.</div>
+    </div>
+  </div>
+</div>
+
+<!-- Alerts -->
+<div class="alerts-panel">
+  <h2>Alerts — Updated Mar 3 Close + Overnight</h2>
+  <div class="alert-item alert-warning"><span class="alert-icon">⚠️</span>QQQ futures -0.63% overnight ($597.76). Expect gap-down Wed open. Premiums will be fatter — wait 30 min for OR hold before entering.<span class="alert-time">OVERNIGHT</span></div>
+  <div class="alert-item alert-entry"><span class="alert-icon">🟢</span>USO pulled back to $88.60 — BELOW $90. Escalation risk easing. Favorable for entries tomorrow.<span class="alert-time">CLOSE</span></div>
+  <div class="alert-item alert-entry"><span class="alert-icon">🟢</span>NEW: COIN $170/$165 = $0.59 credit, 11.8% RoR, IV 114.5%. Crypto proxy with monster premium. Best new find.<span class="alert-time">SCAN</span></div>
+  <div class="alert-item alert-entry"><span class="alert-icon">🟢</span>NEW: PLTR $135/$130 = $0.26 credit, 5.2% RoR, IV 95.7%. Ultra-tight $0.02 bid-ask. Safe pick with 8.5% buffer.<span class="alert-time">SCAN</span></div>
+  <div class="alert-item alert-info"><span class="alert-icon">ℹ️</span>NEW: CRWD $360/$350 = $1.40 credit, 14% RoR, IV 136%. MONSTER credit but low ask_size on $360P — liquidity risk. Use limit orders only.<span class="alert-time">SCAN</span></div>
+  <div class="alert-item alert-info"><span class="alert-icon">ℹ️</span>TSLA $375/$365 credit thinned to $1.01 (was $1.19) as TSLA bounced to $394, then faded to $391 close. Gap-down Wed should re-fatten to ~$1.10–1.20.<span class="alert-time">CLOSE</span></div>
+  <div class="alert-item alert-info"><span class="alert-icon">ℹ️</span>CBOE PCR at 0.67 — not panicking yet. If it spikes above 0.85 Wed, that's the maximum premium selling window.<span class="alert-time">CBOE</span></div>
+</div>
+
+<!-- === EXISTING TRADES (Tue entries, carry into Wed) === -->
+<div class="section-title" style="color:#fbbf24;">⚡ ADJUSTED Credit Spreads — Mar 6 (2 DTE) — Strikes Tightened After Rally</div>
+<div class="grid">
+
+  <!-- TSLA -->
+  <div class="card" style="border-color: rgba(34,197,94,0.4);">
+    <div class="card-header">
+      <div class="card-title">
+        <span class="ticker">TSLA <span class="sector-tag tag-tech">TECH</span></span>
+        <span class="strategy">Bull Put Credit Spread &middot; Mar 6</span>
+      </div>
+      <span class="card-badge badge-best">BEST TRADE</span>
+    </div>
+    <div class="price-block">
+      <div class="price">$400.69</div>
+      <div class="change" style="color:#4ade80">+2.4% today — rallied above $400!</div>
+    </div>
+    <div class="score-bar">
+      <span class="score-label">7-Factor Score</span>
+      <div class="score-track"><div class="score-fill score-fill-green" style="width:71%"></div></div>
+      <span class="score-text" style="color:#4ade80">5/7</span>
+    </div>
+    <div class="conditions">
+      <div class="cond-row cond-pass"><span class="cond-icon">✓</span><span class="cond-label">Price &gt; $390 floor</span><span class="cond-val">$400.69</span></div>
+      <div class="cond-row cond-pass"><span class="cond-icon">✓</span><span class="cond-label">IV &gt; 50%</span><span class="cond-val">59.2%</span></div>
+      <div class="cond-row cond-pass"><span class="cond-icon">✓</span><span class="cond-label">Bid-Ask ≤ $0.05</span><span class="cond-val">$0.03</span></div>
+      <div class="cond-row cond-pass"><span class="cond-icon">✓</span><span class="cond-label">QQQ gapped UP</span><span class="cond-val" style="color:#4ade80">+0.51%</span></div>
+      <div class="cond-row cond-pass"><span class="cond-icon">✓</span><span class="cond-label">Bullish reversal</span><span class="cond-val" style="color:#4ade80">YES</span></div>
+      <div class="cond-row cond-wait"><span class="cond-icon">⏳</span><span class="cond-label">Opening range hold</span><span class="cond-val">CHECK 10:30</span></div>
+      <div class="cond-row cond-wait"><span class="cond-icon">⏳</span><span class="cond-label">Volume exhaustion</span><span class="cond-val">CHECK</span></div>
+    </div>
+    <div class="trade-info">
+      <div class="info-item"><span class="info-label">Spread: </span><span class="info-value" style="color:#fbbf24">$385 / $375 (TIGHTENED)</span></div>
+      <div class="info-item"><span class="info-label">Live Credit: </span><span class="info-value val-green">$1.30</span></div>
+      <div class="info-item"><span class="info-label">Buffer: </span><span class="info-value">3.9% OTM</span></div>
+      <div class="info-item"><span class="info-label">Delta: </span><span class="info-value">-0.200</span></div>
+      <div class="info-item"><span class="info-label">IV: </span><span class="info-value">59.2%</span></div>
+      <div class="info-item"><span class="info-label">RoR: </span><span class="info-value val-green">14.9%</span></div>
+      <div class="info-item"><span class="info-label">Stop: </span><span class="info-value">TSLA &lt; $388</span></div>
+      <div class="info-item"><span class="info-label">Theta: </span><span class="info-value val-green">-$1.21/d</span></div>
+    </div>
+    <div class="card-note note-yellow">
+      ⚠️ STRIKE TIGHTENED from $375/$365 to <strong>$385/$375</strong> after TSLA rallied to $401. Old strikes only yielded $0.42. New $385/$375 gives $1.30 credit (14.9% RoR). Buffer is tighter (3.9%) but only 2 DTE. <strong>Alt: $380/$370 = $0.84 credit, 5.2% buffer.</strong>
+    </div>
+  </div>
+
+  <!-- AMD -->
+  <div class="card" style="border-color: rgba(168,85,247,0.3);">
+    <div class="card-header">
+      <div class="card-title">
+        <span class="ticker">AMD <span class="sector-tag tag-semi">SEMI</span></span>
+        <span class="strategy">Bull Put Credit Spread &middot; Mar 6</span>
+      </div>
+      <span class="card-badge badge-good">SOLID SETUP</span>
+    </div>
+    <div class="price-block">
+      <div class="price">$193.78</div>
+      <div class="change" style="color:#4ade80">+1.6% today</div>
+    </div>
+    <div class="score-bar">
+      <span class="score-label">7-Factor Score</span>
+      <div class="score-track"><div class="score-fill score-fill-green" style="width:71%"></div></div>
+      <span class="score-text" style="color:#4ade80">5/7</span>
+    </div>
+    <div class="conditions">
+      <div class="cond-row cond-pass"><span class="cond-icon">✓</span><span class="cond-label">Price &gt; $188</span><span class="cond-val">$193.78</span></div>
+      <div class="cond-row cond-pass"><span class="cond-icon">✓</span><span class="cond-label">IV &gt; 55%</span><span class="cond-val val-green">80.1%</span></div>
+      <div class="cond-row cond-pass"><span class="cond-icon">✓</span><span class="cond-label">Bid-Ask ≤ $0.05</span><span class="cond-val">$0.04</span></div>
+      <div class="cond-row cond-pass"><span class="cond-icon">✓</span><span class="cond-label">QQQ gapped UP</span><span class="cond-val" style="color:#4ade80">+0.51%</span></div>
+      <div class="cond-row cond-pass"><span class="cond-icon">✓</span><span class="cond-label">Bullish reversal</span><span class="cond-val" style="color:#4ade80">YES</span></div>
+      <div class="cond-row cond-wait"><span class="cond-icon">⏳</span><span class="cond-label">Opening range hold</span><span class="cond-val">CHECK 10:30</span></div>
+      <div class="cond-row cond-wait"><span class="cond-icon">⏳</span><span class="cond-label">Volume exhaustion</span><span class="cond-val">CHECK</span></div>
+    </div>
+    <div class="trade-info">
+      <div class="info-item"><span class="info-label">Spread: </span><span class="info-value" style="color:#fbbf24">$185 / $180 (TIGHTENED)</span></div>
+      <div class="info-item"><span class="info-label">Live Credit: </span><span class="info-value val-green">$0.60</span></div>
+      <div class="info-item"><span class="info-label">Buffer: </span><span class="info-value">4.5% OTM</span></div>
+      <div class="info-item"><span class="info-label">Delta: </span><span class="info-value">-0.196</span></div>
+      <div class="info-item"><span class="info-label">IV: </span><span class="info-value val-green">80.1%</span></div>
+      <div class="info-item"><span class="info-label">RoR: </span><span class="info-value val-green">13.6%</span></div>
+      <div class="info-item"><span class="info-label">Stop: </span><span class="info-value">AMD &lt; $187</span></div>
+      <div class="info-item"><span class="info-label">Theta: </span><span class="info-value val-green">-$0.79/d</span></div>
+    </div>
+    <div class="card-note note-yellow">
+      ⚠️ STRIKE TIGHTENED from $175/$170 to <strong>$185/$180</strong>. Old strikes yielded $0.14 (dead). New gives $0.60 credit (13.6% RoR). IV still monster at 80.1%. <strong>Alt: $180/$175 = $0.32 credit, 7.1% buffer (safer).</strong>
+    </div>
+  </div>
+
+  <!-- NVDA -->
+  <div class="card">
+    <div class="card-header">
+      <div class="card-title">
+        <span class="ticker">NVDA <span class="sector-tag tag-semi">SEMI</span></span>
+        <span class="strategy">Bull Put Credit Spread &middot; Mar 6</span>
+      </div>
+      <span class="card-badge badge-dropped">SKIP — $0.08</span>
+    </div>
+    <div class="price-block">
+      <div class="price">$181.97</div>
+      <div class="change" style="color:#4ade80">+1.2% today</div>
+    </div>
+    <div class="score-bar">
+      <span class="score-label">7-Factor Score</span>
+      <div class="score-track"><div class="score-fill score-fill-yellow" style="width:43%"></div></div>
+      <span class="score-text" style="color:#fbbf24">3/7</span>
+    </div>
+    <div class="conditions">
+      <div class="cond-row cond-pass"><span class="cond-icon">✓</span><span class="cond-label">Price &gt; $170</span><span class="cond-val">$179.86</span></div>
+      <div class="cond-row cond-pass"><span class="cond-icon">✓</span><span class="cond-label">IV &gt; 55%</span><span class="cond-val">69.2%</span></div>
+      <div class="cond-row cond-pass"><span class="cond-icon">✓</span><span class="cond-label">USO &lt; $90</span><span class="cond-val">$88.60</span></div>
+      <div class="cond-row cond-wait"><span class="cond-icon">⏳</span><span class="cond-label">Bid-Ask (check at entry)</span><span class="cond-val">TBD</span></div>
+      <div class="cond-row cond-wait"><span class="cond-icon">⏳</span><span class="cond-label">Opening range hold</span><span class="cond-val">WED/THU</span></div>
+      <div class="cond-row cond-wait"><span class="cond-icon">⏳</span><span class="cond-label">Relief bounce confirmed</span><span class="cond-val">MONITOR</span></div>
+      <div class="cond-row cond-wait"><span class="cond-icon">⏳</span><span class="cond-label">Volume exhaustion</span><span class="cond-val">CHECK</span></div>
+    </div>
+    <div class="trade-info">
+      <div class="info-item"><span class="info-label">Spread: </span><span class="info-value">$165 / $160</span></div>
+      <div class="info-item"><span class="info-label">Live Credit: </span><span class="info-value val-yellow">$0.18</span></div>
+      <div class="info-item"><span class="info-label">Buffer: </span><span class="info-value">8.3% OTM</span></div>
+      <div class="info-item"><span class="info-label">Delta: </span><span class="info-value">-0.074</span></div>
+      <div class="info-item"><span class="info-label">IV: </span><span class="info-value">69.2%</span></div>
+      <div class="info-item"><span class="info-label">RoR: </span><span class="info-value val-yellow">3.7%</span></div>
+      <div class="info-item"><span class="info-label">Stop: </span><span class="info-value">NVDA &lt; $168</span></div>
+      <div class="info-item"><span class="info-label">Alt: </span><span class="info-value">$170/$165 = ~$0.35</span></div>
+    </div>
+    <div class="card-note note-yellow">
+      ⛔ DEAD TRADE — $165/$160 credit collapsed to $0.08 after rally. Not viable at any strike width for 2 DTE. Skip entirely.
+    </div>
+  </div>
+
+</div>
+
+<!-- === NEW CANDIDATES — Wed Mar 4 (STALE after rally) === -->
+<div class="section-title" style="color:#94a3b8; opacity:0.6;">Mar 6 Credit Spread Candidates — STALE (pre-rally prices, most now dead)</div>
+<div class="grid">
+
+  <!-- COIN — NEW BEST FIND -->
+  <div class="card" style="border-color: rgba(251,146,60,0.4);">
+    <div class="card-header">
+      <div class="card-title">
+        <span class="ticker">COIN <span class="sector-tag tag-crypto">CRYPTO</span></span>
+        <span class="strategy">Bull Put Credit Spread &middot; Mar 6</span>
+      </div>
+      <span class="card-badge" style="background:#374151; color:#9ca3af;">STALE — COIN NOW $199</span>
+    </div>
+    <div class="price-block">
+      <div class="price" style="text-decoration:line-through; opacity:0.5;">$182.48</div>
+      <div class="change" style="color:#f87171">COIN rallied +9.3% → $199.40. This spread is dead.</div>
+    </div>
+    <div class="score-bar">
+      <span class="score-label">7-Factor Score</span>
+      <div class="score-track"><div class="score-fill score-fill-green" style="width:57%"></div></div>
+      <span class="score-text" style="color:#4ade80">4/7</span>
+    </div>
+    <div class="conditions">
+      <div class="cond-row cond-pass"><span class="cond-icon">✓</span><span class="cond-label">Price &gt; $170 (6.6% buffer)</span><span class="cond-val">$182.48</span></div>
+      <div class="cond-row cond-pass"><span class="cond-icon">✓</span><span class="cond-label">IV &gt; 50% (MONSTER)</span><span class="cond-val val-green">114.5%</span></div>
+      <div class="cond-row cond-fail"><span class="cond-icon">⚠</span><span class="cond-label">Bid-Ask ≤ $0.05 (wider)</span><span class="cond-val val-yellow">$0.11</span></div>
+      <div class="cond-row cond-pass"><span class="cond-icon">✓</span><span class="cond-label">USO &lt; $90</span><span class="cond-val">$88.60</span></div>
+      <div class="cond-row cond-wait"><span class="cond-icon">⏳</span><span class="cond-label">QQQ gap → wait 30m</span><span class="cond-val">-0.63%</span></div>
+      <div class="cond-row cond-wait"><span class="cond-icon">⏳</span><span class="cond-label">Opening range hold</span><span class="cond-val">WED 10:30</span></div>
+      <div class="cond-row cond-pass"><span class="cond-icon">✓</span><span class="cond-label">Volume (1800+ on short)</span><span class="cond-val">OK</span></div>
+    </div>
+    <div class="trade-info">
+      <div class="info-item"><span class="info-label">Spread: </span><span class="info-value">$170 / $165</span></div>
+      <div class="info-item"><span class="info-label">Live Credit: </span><span class="info-value val-green">$0.59</span></div>
+      <div class="info-item"><span class="info-label">Buffer: </span><span class="info-value">6.6% OTM</span></div>
+      <div class="info-item"><span class="info-label">Delta: </span><span class="info-value">-0.191</span></div>
+      <div class="info-item"><span class="info-label">IV: </span><span class="info-value val-green">114.5%</span></div>
+      <div class="info-item"><span class="info-label">RoR: </span><span class="info-value val-green">11.8%</span></div>
+      <div class="info-item"><span class="info-label">Theta: </span><span class="info-value val-green">-$1.05/d</span></div>
+      <div class="info-item"><span class="info-label">Contracts: </span><span class="info-value">60x ($5 wide)</span></div>
+      <div class="info-item"><span class="info-label">Max Profit: </span><span class="info-value val-green">$3,540</span></div>
+      <div class="info-item"><span class="info-label">Max Risk: </span><span class="info-value val-red">$26,460</span></div>
+    </div>
+    <div class="card-note note-blue">
+      🆕 Best new find from 40-symbol scan. COIN IV at 114.5% = extreme premium richness. $0.59 credit on $5 wide = 11.8% RoR. Bid-ask wider ($0.11) than ideal — use limit orders at mid. Risk: BTC crash could spike COIN 8%+ in a day.
+    </div>
+  </div>
+
+  <!-- PLTR — NEW SOLID -->
+  <div class="card" style="border-color: rgba(236,72,153,0.3);">
+    <div class="card-header">
+      <div class="card-title">
+        <span class="ticker">PLTR <span class="sector-tag tag-ai">AI/MOMO</span></span>
+        <span class="strategy">Bull Put Credit Spread &middot; Mar 6</span>
+      </div>
+      <span class="card-badge" style="background:#374151; color:#9ca3af;">STALE — PLTR NOW $151</span>
+    </div>
+    <div class="price-block">
+      <div class="price" style="text-decoration:line-through; opacity:0.5;">$147.48</div>
+      <div class="change" style="color:#fbbf24">PLTR rallied +2.6% → $151.26. Credit likely crushed.</div>
+    </div>
+    <div class="score-bar">
+      <span class="score-label">7-Factor Score</span>
+      <div class="score-track"><div class="score-fill score-fill-green" style="width:57%"></div></div>
+      <span class="score-text" style="color:#4ade80">4/7</span>
+    </div>
+    <div class="conditions">
+      <div class="cond-row cond-pass"><span class="cond-icon">✓</span><span class="cond-label">Price &gt; $135 (8.5% buffer)</span><span class="cond-val">$147.48</span></div>
+      <div class="cond-row cond-pass"><span class="cond-icon">✓</span><span class="cond-label">IV &gt; 50%</span><span class="cond-val val-green">95.7%</span></div>
+      <div class="cond-row cond-pass"><span class="cond-icon">✓</span><span class="cond-label">Bid-Ask ≤ $0.05</span><span class="cond-val val-green">$0.02</span></div>
+      <div class="cond-row cond-pass"><span class="cond-icon">✓</span><span class="cond-label">Volume (6K+ on both legs)</span><span class="cond-val">DEEP</span></div>
+      <div class="cond-row cond-wait"><span class="cond-icon">⏳</span><span class="cond-label">QQQ gap → wait 30m</span><span class="cond-val">-0.63%</span></div>
+      <div class="cond-row cond-wait"><span class="cond-icon">⏳</span><span class="cond-label">Opening range hold</span><span class="cond-val">WED 10:30</span></div>
+      <div class="cond-row cond-wait"><span class="cond-icon">⏳</span><span class="cond-label">Volume exhaustion</span><span class="cond-val">CHECK</span></div>
+    </div>
+    <div class="trade-info">
+      <div class="info-item"><span class="info-label">Spread: </span><span class="info-value">$135 / $130</span></div>
+      <div class="info-item"><span class="info-label">Live Credit: </span><span class="info-value val-green">$0.26</span></div>
+      <div class="info-item"><span class="info-label">Buffer: </span><span class="info-value">8.5% OTM</span></div>
+      <div class="info-item"><span class="info-label">Delta: </span><span class="info-value">-0.104</span></div>
+      <div class="info-item"><span class="info-label">IV: </span><span class="info-value val-green">95.7%</span></div>
+      <div class="info-item"><span class="info-label">RoR: </span><span class="info-value val-green">5.2%</span></div>
+      <div class="info-item"><span class="info-label">Theta: </span><span class="info-value val-green">-$0.47/d</span></div>
+      <div class="info-item"><span class="info-label">Contracts: </span><span class="info-value">60x ($5 wide)</span></div>
+      <div class="info-item"><span class="info-label">Max Profit: </span><span class="info-value val-green">$1,560</span></div>
+      <div class="info-item"><span class="info-label">Max Risk: </span><span class="info-value val-red">$28,440</span></div>
+    </div>
+    <div class="card-note note-green">
+      ✅ Safest new pick. Tightest bid-ask in entire scan ($0.02!), deepest volume (6K+ contracts), 8.5% OTM buffer. Lower RoR (5.2%) but very high probability of profit. AI/defense narrative supports PLTR.
+    </div>
+  </div>
+
+  <!-- CRWD — NEW MONSTER CREDIT (LIQUIDITY WATCH) -->
+  <div class="card" style="border-color: rgba(34,197,94,0.25);">
+    <div class="card-header">
+      <div class="card-title">
+        <span class="ticker">CRWD <span class="sector-tag tag-cyber">CYBER</span></span>
+        <span class="strategy">Bull Put Credit Spread &middot; Mar 6</span>
+      </div>
+      <span class="card-badge" style="background:#374151; color:#9ca3af;">STALE — CHECK LIVE</span>
+    </div>
+    <div class="price-block">
+      <div class="price" style="text-decoration:line-through; opacity:0.5;">$390.80</div>
+      <div class="change" style="color:#fbbf24">Pre-rally price. Was already illiquid — likely worse now.</div>
+    </div>
+    <div class="score-bar">
+      <span class="score-label">7-Factor Score</span>
+      <div class="score-track"><div class="score-fill score-fill-yellow" style="width:43%"></div></div>
+      <span class="score-text" style="color:#fbbf24">3/7</span>
+    </div>
+    <div class="conditions">
+      <div class="cond-row cond-pass"><span class="cond-icon">✓</span><span class="cond-label">Price &gt; $360 (7.7% buffer)</span><span class="cond-val">$390.80</span></div>
+      <div class="cond-row cond-pass"><span class="cond-icon">✓</span><span class="cond-label">IV &gt; 50% (EXTREME)</span><span class="cond-val val-green">136%</span></div>
+      <div class="cond-row cond-fail"><span class="cond-icon">✗</span><span class="cond-label">Bid-Ask ≤ $0.05</span><span class="cond-val val-red">$0.35</span></div>
+      <div class="cond-row cond-fail"><span class="cond-icon">✗</span><span class="cond-label">Ask size on $360P</span><span class="cond-val val-red">1 lot!</span></div>
+      <div class="cond-row cond-wait"><span class="cond-icon">⏳</span><span class="cond-label">Opening range hold</span><span class="cond-val">WED 10:30</span></div>
+      <div class="cond-row cond-wait"><span class="cond-icon">⏳</span><span class="cond-label">Liquidity at open</span><span class="cond-val">RECHECK</span></div>
+      <div class="cond-row cond-wait"><span class="cond-icon">⏳</span><span class="cond-label">Volume exhaustion</span><span class="cond-val">CHECK</span></div>
+    </div>
+    <div class="trade-info">
+      <div class="info-item"><span class="info-label">Spread: </span><span class="info-value">$360 / $350</span></div>
+      <div class="info-item"><span class="info-label">Live Credit: </span><span class="info-value val-green">$1.40</span></div>
+      <div class="info-item"><span class="info-label">Buffer: </span><span class="info-value">7.7% OTM</span></div>
+      <div class="info-item"><span class="info-label">Delta: </span><span class="info-value">-0.188</span></div>
+      <div class="info-item"><span class="info-label">IV: </span><span class="info-value val-green">136%</span></div>
+      <div class="info-item"><span class="info-label">RoR: </span><span class="info-value val-green">14.0%</span></div>
+      <div class="info-item"><span class="info-label">Theta: </span><span class="info-value val-green">-$2.65/d</span></div>
+      <div class="info-item"><span class="info-label">Contracts: </span><span class="info-value">30x ($10 wide)</span></div>
+      <div class="info-item"><span class="info-label">Max Profit: </span><span class="info-value val-green">$4,200</span></div>
+      <div class="info-item"><span class="info-label">Max Risk: </span><span class="info-value val-red">$25,800</span></div>
+    </div>
+    <div class="card-note note-red">
+      ⚠️ MONSTER credit ($1.40 = 14% RoR) and insane IV (136%). BUT ask_size only 1 lot on $360P and bid-ask is $0.35 wide. <strong>Must recheck liquidity at open.</strong> Only use limit orders at mid-price. If liquidity doesn't improve, skip.
+    </div>
+  </div>
+
+</div>
+
+<!-- === CASH-SECURED PUTS — March 13 Expiry === -->
+<div class="section-title">Cash-Secured Puts — March 13 Expiry (8 DTE) — COIN Strike RAISED to $185</div>
+<div class="grid">
+
+  <!-- COIN CSP -->
+  <div class="card" style="border-color: rgba(251,146,60,0.4);">
+    <div class="card-header">
+      <div class="card-title">
+        <span class="ticker">COIN <span class="sector-tag tag-crypto">CRYPTO</span></span>
+        <span class="strategy">Cash-Secured Put &middot; Mar 13</span>
+      </div>
+      <span class="card-badge badge-best">TOP CSP</span>
+    </div>
+    <div class="price-block">
+      <div class="price">$199.40</div>
+      <div class="change" style="color:#4ade80">+9.3% rally! Strike RAISED to $185</div>
+    </div>
+    <div class="trade-info">
+      <div class="info-item"><span class="info-label">Strike: </span><span class="info-value" style="color:#fbbf24">$185 Put (RAISED from $165)</span></div>
+      <div class="info-item"><span class="info-label">Bid Credit: </span><span class="info-value val-green">$3.90</span></div>
+      <div class="info-item"><span class="info-label">Buffer: </span><span class="info-value">7.2% OTM</span></div>
+      <div class="info-item"><span class="info-label">Delta: </span><span class="info-value">-0.233</span></div>
+      <div class="info-item"><span class="info-label">IV: </span><span class="info-value val-green">86.6%</span></div>
+      <div class="info-item"><span class="info-label">Theta: </span><span class="info-value val-green">-$0.46/d</span></div>
+      <div class="info-item"><span class="info-label">Cash Req/ct: </span><span class="info-value">$18,500</span></div>
+      <div class="info-item"><span class="info-label">Yield (8d): </span><span class="info-value val-green">2.11%</span></div>
+      <div class="info-item"><span class="info-label">Ann. Yield: </span><span class="info-value val-green">~96%</span></div>
+      <div class="info-item"><span class="info-label">Assign Price: </span><span class="info-value">$181.10 eff.</span></div>
+    </div>
+    <div class="card-note note-yellow">
+      ⚠️ STRIKE RAISED from $165 to <strong>$185</strong> after COIN's +9.3% monster rally. Old $165 strike was 17% OTM (too far, credit crushed to $1.16). New $185 gives $3.90 credit (2.11% yield). Wider bid-ask ($0.20). <strong>10 contracts = $185K cash, $3,900 income. Alt: $180P = $2.84 (safer).</strong>
+    </div>
+  </div>
+
+  <!-- PLTR CSP -->
+  <div class="card" style="border-color: rgba(236,72,153,0.3);">
+    <div class="card-header">
+      <div class="card-title">
+        <span class="ticker">PLTR <span class="sector-tag tag-ai">AI/MOMO</span></span>
+        <span class="strategy">Cash-Secured Put &middot; Mar 13</span>
+      </div>
+      <span class="card-badge badge-good">HIGH YIELD</span>
+    </div>
+    <div class="price-block">
+      <div class="price">$151.26</div>
+      <div class="change" style="color:#4ade80">+2.6% | assignment = buy at $138.11</div>
+    </div>
+    <div class="trade-info">
+      <div class="info-item"><span class="info-label">Strike: </span><span class="info-value">$140 Put</span></div>
+      <div class="info-item"><span class="info-label">Bid Credit: </span><span class="info-value val-yellow">$1.89 (was $2.87)</span></div>
+      <div class="info-item"><span class="info-label">Buffer: </span><span class="info-value">7.4% OTM</span></div>
+      <div class="info-item"><span class="info-label">Delta: </span><span class="info-value">-0.290</span></div>
+      <div class="info-item"><span class="info-label">IV: </span><span class="info-value val-green">65.0%</span></div>
+      <div class="info-item"><span class="info-label">Theta: </span><span class="info-value val-green">-$0.28/d</span></div>
+      <div class="info-item"><span class="info-label">Cash Req/ct: </span><span class="info-value">$14,000</span></div>
+      <div class="info-item"><span class="info-label">Yield (9d): </span><span class="info-value val-green">2.05%</span></div>
+      <div class="info-item"><span class="info-label">Ann. Yield: </span><span class="info-value val-green">~83%</span></div>
+      <div class="info-item"><span class="info-label">Assign Price: </span><span class="info-value">$137.13 eff.</span></div>
+    </div>
+    <div class="card-note note-yellow">
+      ⚠️ Premium reduced -34% from $2.87 to $1.89 after rally. Buffer improved to 7.4% (was 5.1%). Still tight bid-ask $0.04. Yield dropped to 1.35%/8d. <strong>10 contracts = $140K cash, $1,890 income.</strong>
+    </div>
+  </div>
+
+  <!-- AMD CSP -->
+  <div class="card" style="border-color: rgba(168,85,247,0.3);">
+    <div class="card-header">
+      <div class="card-title">
+        <span class="ticker">AMD <span class="sector-tag tag-semi">SEMI</span></span>
+        <span class="strategy">Cash-Secured Put &middot; Mar 13</span>
+      </div>
+      <span class="card-badge badge-good">SOLID CSP</span>
+    </div>
+    <div class="price-block">
+      <div class="price">$193.78</div>
+      <div class="change" style="color:#4ade80">+1.6% | assignment = buy at $173.29</div>
+    </div>
+    <div class="trade-info">
+      <div class="info-item"><span class="info-label">Strike: </span><span class="info-value">$175 Put</span></div>
+      <div class="info-item"><span class="info-label">Bid Credit: </span><span class="info-value val-yellow">$1.71 (was $2.38)</span></div>
+      <div class="info-item"><span class="info-label">Buffer: </span><span class="info-value">9.7% OTM</span></div>
+      <div class="info-item"><span class="info-label">Delta: </span><span class="info-value">-0.196</span></div>
+      <div class="info-item"><span class="info-label">IV: </span><span class="info-value val-green">70.3%</span></div>
+      <div class="info-item"><span class="info-label">Theta: </span><span class="info-value val-green">-$0.32/d</span></div>
+      <div class="info-item"><span class="info-label">Cash Req/ct: </span><span class="info-value">$17,500</span></div>
+      <div class="info-item"><span class="info-label">Yield (9d): </span><span class="info-value val-green">1.36%</span></div>
+      <div class="info-item"><span class="info-label">Ann. Yield: </span><span class="info-value val-green">~55%</span></div>
+      <div class="info-item"><span class="info-label">Assign Price: </span><span class="info-value">$172.62 eff.</span></div>
+    </div>
+    <div class="card-note note-green">
+      ⚠️ Premium reduced -28% from $2.38 to $1.71 after rally. Buffer improved to 9.7%. Still decent IV at 69.3%. <strong>10 contracts = $175K cash, $1,710 income.</strong>
+    </div>
+  </div>
+
+</div>
+
+<!-- === NAKED CALLS — March 13 Expiry === -->
+<div class="section-title" style="color:#f87171;">Naked Calls — March 13 (8 DTE) — TSLA RAISED to $430, COIN RAISED to $220</div>
+<div class="grid">
+
+  <!-- TSLA Naked Call -->
+  <div class="card" style="border-color: rgba(56,189,248,0.3);">
+    <div class="card-header">
+      <div class="card-title">
+        <span class="ticker">TSLA <span class="sector-tag tag-tech">TECH</span></span>
+        <span class="strategy">Naked Call &middot; Mar 13</span>
+      </div>
+      <span class="card-badge badge-best">BEST CALL</span>
+    </div>
+    <div class="price-block">
+      <div class="price">$400.69</div>
+      <div class="change" style="color:#fbbf24">sell $430C (RAISED from $420) = 7.3% OTM</div>
+    </div>
+    <div class="trade-info">
+      <div class="info-item"><span class="info-label">Strike: </span><span class="info-value" style="color:#fbbf24">$430 Call (RAISED from $420)</span></div>
+      <div class="info-item"><span class="info-label">Bid Credit: </span><span class="info-value val-green">$1.68</span></div>
+      <div class="info-item"><span class="info-label">Buffer: </span><span class="info-value">7.3% OTM</span></div>
+      <div class="info-item"><span class="info-label">Delta: </span><span class="info-value">+0.133</span></div>
+      <div class="info-item"><span class="info-label">IV: </span><span class="info-value">41.2%</span></div>
+      <div class="info-item"><span class="info-label">Theta: </span><span class="info-value val-green">-$0.31/d</span></div>
+      <div class="info-item"><span class="info-label">B-A Spread: </span><span class="info-value val-green">$0.03</span></div>
+      <div class="info-item"><span class="info-label">Volume: </span><span class="info-value">691</span></div>
+      <div class="info-item"><span class="info-label">Breakeven: </span><span class="info-value">$431.68</span></div>
+      <div class="info-item"><span class="info-label">Stop Loss: </span><span class="info-value val-red">TSLA &gt; $420</span></div>
+    </div>
+    <div class="card-note note-yellow">
+      ⚠️ STRIKE RAISED from $420 to <strong>$430</strong> after TSLA rallied to $401. Old $420C had only 4.8% buffer (too close). New $430C restores 7.3% buffer. Credit lower ($1.68 vs $3.75 at old strike) but much safer delta (+0.13). <strong>5 contracts = $840 income.</strong>
+    </div>
+  </div>
+
+  <!-- COIN Naked Call -->
+  <div class="card" style="border-color: rgba(251,146,60,0.3);">
+    <div class="card-header">
+      <div class="card-title">
+        <span class="ticker">COIN <span class="sector-tag tag-crypto">CRYPTO</span></span>
+        <span class="strategy">Naked Call &middot; Mar 13</span>
+      </div>
+      <span class="card-badge" style="background:#7f1d1d; color:#fca5a5;">STRIKE RAISED</span>
+    </div>
+    <div class="price-block">
+      <div class="price">$199.40</div>
+      <div class="change" style="color:#f87171">sell $220C (RAISED from $200) | old $200C = ATM ⛔</div>
+    </div>
+    <div class="trade-info">
+      <div class="info-item"><span class="info-label">Strike: </span><span class="info-value" style="color:#f87171">$220 Call (RAISED — old $200 is ATM!)</span></div>
+      <div class="info-item"><span class="info-label">Bid Credit: </span><span class="info-value val-green">$4.00</span></div>
+      <div class="info-item"><span class="info-label">Buffer: </span><span class="info-value">10.3% OTM</span></div>
+      <div class="info-item"><span class="info-label">Delta: </span><span class="info-value">+0.279</span></div>
+      <div class="info-item"><span class="info-label">IV: </span><span class="info-value val-green">81.7%</span></div>
+      <div class="info-item"><span class="info-label">Theta: </span><span class="info-value val-green">-$0.49/d</span></div>
+      <div class="info-item"><span class="info-label">B-A Spread: </span><span class="info-value val-yellow">$0.40</span></div>
+      <div class="info-item"><span class="info-label">Volume: </span><span class="info-value">944</span></div>
+      <div class="info-item"><span class="info-label">Breakeven: </span><span class="info-value">$224.00</span></div>
+      <div class="info-item"><span class="info-label">Stop Loss: </span><span class="info-value val-red">COIN &gt; $212</span></div>
+    </div>
+    <div class="card-note note-red">
+      🔴 OLD $200C IS DEAD — COIN rallied to $199.40, making $200C essentially ATM (delta 0.54!). RAISED to $220C for 10.3% buffer. $4.00 credit is excellent but bid-ask is wider ($0.40). Delta +0.28 is elevated — COIN is volatile. <strong>5 contracts = $2,000 income. Use strict stop at $212.</strong>
+    </div>
+  </div>
+
+  <!-- AMD Naked Call -->
+  <div class="card" style="border-color: rgba(168,85,247,0.3);">
+    <div class="card-header">
+      <div class="card-title">
+        <span class="ticker">AMD <span class="sector-tag tag-semi">SEMI</span></span>
+        <span class="strategy">Naked Call &middot; Mar 13</span>
+      </div>
+      <span class="card-badge badge-good">SAFE CALL</span>
+    </div>
+    <div class="price-block">
+      <div class="price">$193.78</div>
+      <div class="change" style="color:#4ade80">+1.6% today | sell $210C = 8.4% OTM above</div>
+    </div>
+    <div class="trade-info">
+      <div class="info-item"><span class="info-label">Strike: </span><span class="info-value">$210 Call</span></div>
+      <div class="info-item"><span class="info-label">Bid Credit: </span><span class="info-value val-green">$1.69</span></div>
+      <div class="info-item"><span class="info-label">Buffer: </span><span class="info-value">8.4% OTM</span></div>
+      <div class="info-item"><span class="info-label">Delta: </span><span class="info-value">+0.164</span></div>
+      <div class="info-item"><span class="info-label">IV: </span><span class="info-value">58.4%</span></div>
+      <div class="info-item"><span class="info-label">Theta: </span><span class="info-value val-green">-$0.24/d</span></div>
+      <div class="info-item"><span class="info-label">B-A Spread: </span><span class="info-value val-green">$0.05</span></div>
+      <div class="info-item"><span class="info-label">Volume: </span><span class="info-value">1,884</span></div>
+      <div class="info-item"><span class="info-label">Breakeven: </span><span class="info-value">$211.69</span></div>
+      <div class="info-item"><span class="info-label">Stop Loss: </span><span class="info-value val-red">AMD &gt; $205</span></div>
+    </div>
+    <div class="card-note note-green">
+      ✅ Safest naked call. AMD needs +8.4% rally in 8 days — unlikely during geopolitical stress. Credit slightly better at $1.69 (was $1.43) after rally moved stock closer. Tight $0.05 bid-ask. <strong>10 contracts = $1,690 income.</strong>
+    </div>
+  </div>
+
+</div>
+
+<!-- CSP + Naked Call Summary — LIVE UPDATED -->
+<div class="portfolio-bar" style="grid-template-columns: repeat(5, 1fr);">
+  <div class="pf-item"><div class="pf-label">CSP Cash Required</div><div class="pf-value" style="color:#fbbf24">$500,000</div></div>
+  <div class="pf-item"><div class="pf-label">Spread Income (2 trades)</div><div class="pf-value" style="color:#4ade80">$7,500</div></div>
+  <div class="pf-item"><div class="pf-label">CSP Income (3×10ct)</div><div class="pf-value" style="color:#4ade80">$7,500</div></div>
+  <div class="pf-item"><div class="pf-label">NC Income (3 trades)</div><div class="pf-value" style="color:#4ade80">$4,530</div></div>
+  <div class="pf-item"><div class="pf-label">GRAND TOTAL Income</div><div class="pf-value" style="color:#4ade80;font-size:1.3em;">$19,530</div></div>
+</div>
+
+<!-- Wednesday Morning Scan Protocol -->
+<div class="playbook" style="border-left:3px solid #fbbf24;">
+  <h2 style="color:#fbbf24;">⏰ Wednesday Mar 4 — Morning Scan Protocol</h2>
+  <div class="pb-row">
+    <div class="pb-day" style="min-width:90px;">9:30 AM</div>
+    <div class="pb-action">Market opens. Watch gap direction. <span class="pb-red">DO NOT TRADE first 15 min.</span></div>
+  </div>
+  <div class="pb-row">
+    <div class="pb-day" style="min-width:90px;">9:45 AM</div>
+    <div class="pb-action"><span class="pb-green">LIVE SCAN COMPLETE ✓</span> — Market gapped UP (QQQ +0.51%). Strikes tightened. COIN +9.3%! NVDA spread dead. See adjusted cards above.</div>
+  </div>
+  <div class="pb-row">
+    <div class="pb-day" style="min-width:90px;">10:00 AM</div>
+    <div class="pb-action">Check QQQ/SPY — is opening range holding? No new lows since open?</div>
+  </div>
+  <div class="pb-row">
+    <div class="pb-day" style="min-width:90px;">10:30 AM</div>
+    <div class="pb-action"><span class="pb-green">DECISION POINT</span> — If no new session lows → opening range hold ✓. Begin entering <strong>credit spreads</strong> (TSLA, AMD).</div>
+  </div>
+  <div class="pb-row">
+    <div class="pb-day" style="min-width:90px;">11AM–12PM</div>
+    <div class="pb-action">Enter <strong>CSPs</strong> (COIN <strong>$185P</strong>, PLTR $140P, AMD $175P). Strikes adjusted post-rally. Use limit orders at mid.</div>
+  </div>
+  <div class="pb-row">
+    <div class="pb-day" style="min-width:90px;">1–2 PM</div>
+    <div class="pb-action">Enter <strong>naked calls</strong> (TSLA <strong>$430C</strong>, COIN <strong>$220C</strong>, AMD $210C). Strikes RAISED after rally. Afternoon = safest.</div>
+  </div>
+  <div class="pb-row">
+    <div class="pb-day" style="min-width:90px;">3:00 PM</div>
+    <div class="pb-action">Final position check. Confirm all fills. Set stop-loss alerts.</div>
+  </div>
+</div>
+
+<!-- Dropped from Scan -->
+<div class="dropped-section">
+  <h2>Scanned &amp; Dropped (40 symbols → 6 survived)</h2>
+  <div class="dropped-row"><span><strong>MSTR</strong> $132 — $115/$110 credit only $0.17 (3.4% RoR). Not enough premium.</span><span class="dropped-reason">THIN CREDIT</span></div>
+  <div class="dropped-row"><span><strong>AFRM</strong> $47.70 — $44/$42 credit $0.18 (9% RoR) but only 115 volume on short leg.</span><span class="dropped-reason">LOW VOLUME</span></div>
+  <div class="dropped-row"><span><strong>HOOD</strong> $75.75 — $70/$65 credit $0.29 but $65P bid-ask is $0.05/$0.15 (200% spread!).</span><span class="dropped-reason">ILLIQUID LONG</span></div>
+  <div class="dropped-row"><span><strong>SMCI</strong> $30.61 — $27/$25 credit $0.04. Price too low for meaningful spreads.</span><span class="dropped-reason">THIN CREDIT</span></div>
+  <div class="dropped-row"><span><strong>SNAP, MARA, RIOT, SOFI</strong> — Too low-priced for $5+ wide credit spreads.</span><span class="dropped-reason">LOW PRICE</span></div>
+  <div class="dropped-row"><span><strong>AAPL, MSFT, AMZN, NFLX</strong> — IV too low (&lt;40%). Not enough premium for weekly spreads.</span><span class="dropped-reason">LOW IV</span></div>
+  <div class="dropped-row"><span><strong>SHOP, ROKU, ARM, RBLX, ABNB</strong> — Wide bid-ask on options (&gt;$0.10). Liquidity fails.</span><span class="dropped-reason">ILLIQUID</span></div>
+  <div class="dropped-row"><span><strong>GD, GLD</strong> — Previously dropped. GD illiquid, GLD thesis busted.</span><span class="dropped-reason">PRIOR DROP</span></div>
+</div>
+
+<!-- Weekly Playbook -->
+<div class="playbook">
+  <h2>Weekly Playbook — Updated Mar 4</h2>
+  <div class="pb-row">
+    <div class="pb-day">Mon Mar 2</div>
+    <div class="pb-action"><span class="pb-red">DONE</span> — Deep selloff. SPY -1.2%. USO spiked to $92.37. GLD crashed. Observed only.</div>
+  </div>
+  <div class="pb-row">
+    <div class="pb-day">Tue Mar 3</div>
+    <div class="pb-action"><span class="pb-yellow">DONE</span> — Stabilization. Credits confirmed. 7-factor framework built. CSP + naked call candidates scanned. USO back to $88.60.</div>
+  </div>
+  <div class="pb-row">
+    <div class="pb-day" style="color:#fbbf24;">Wed Mar 4 ★</div>
+    <div class="pb-action"><span class="pb-green">TODAY — KEY ENTRY DAY.</span> 🟢 BULLISH SURPRISE: QQQ gapped UP +0.51% (futures were -0.63%). All strikes tightened. NVDA skipped. COIN +9.3% monster rally. Enter adjusted trades per scan protocol above. USO $91.03 — still above $90.</div>
+  </div>
+  <div class="pb-row">
+    <div class="pb-day">Thu Mar 5</div>
+    <div class="pb-action">Monitor all positions. Close credit spreads at 70%+ profit. Enter NVDA or CRWD if conditions met. ADP employment data.</div>
+  </div>
+  <div class="pb-row">
+    <div class="pb-day">Fri Mar 6</div>
+    <div class="pb-action"><span class="pb-red">NONFARM PAYROLLS.</span> Close ALL credit spread positions by 2:00 PM ET. CSPs/NCs (Mar 13) can hold if USO &lt; $95.</div>
+  </div>
+  <div class="pb-row">
+    <div class="pb-day">Mon–Thu Mar 9–12</div>
+    <div class="pb-action">Monitor Mar 13 CSPs and naked calls. Close at 65%+ profit. Tighten stops if approaching strikes.</div>
+  </div>
+  <div class="pb-row">
+    <div class="pb-day">Fri Mar 13</div>
+    <div class="pb-action">All Mar 13 options expire. Close or let expire by 2:00 PM ET.</div>
+  </div>
+</div>
+
+<!-- Scan History -->
+<div class="alerts-panel">
+  <h2>Scan History</h2>
+  <div class="alert-item" style="border-left:3px solid #4ade80;"><span class="alert-icon">🟢</span>BULLISH SURPRISE! QQQ +0.51% gap up. Strikes tightened: TSLA $385/$375 ($1.30) | AMD $185/$180 ($0.60) | NVDA SKIP ($0.08) | COIN CSP→$185P ($3.90) | COIN NC→$220C ($4.00) | TSLA NC→$430C ($1.68) | AMD NC $210C ($1.69) | Total $19,530<span class="alert-time">Mar 4 Live</span></div>
+  <div class="alert-item alert-entry"><span class="alert-icon">📊</span>40-sym scan: COIN $182 ✓(11.8% RoR, IV 114%!) | PLTR $147 ✓(5.2%, tight B/A) | CRWD $390 ⚠️(14%! but illiquid) | MSTR/AFRM/HOOD/SMCI ✗dropped<span class="alert-time">Mar 3 Night</span></div>
+  <div class="alert-item alert-warning"><span class="alert-icon">📊</span>TSLA $391 ✓(4/7, $1.01) | AMD $191 ✓(4/7, $0.23) | NVDA $180 ⏳(3/7) | USO $88.60 ✓ below $90<span class="alert-time">Mar 3 Close</span></div>
+  <div class="alert-item alert-info"><span class="alert-icon">📊</span>TSLA $392 ✓(3/4, $1.19) | AMD $191 ✓(3/4, $0.31) | NVDA $180 ⏳(2/4) | USO $92.37 🔴<span class="alert-time">Mar 3 AM</span></div>
+</div>
+
+<div class="footer">
+  Options Strategy Dashboard v3.5 &middot; LIVE INTRADAY &middot; 7-factor framework &middot; 8 trades (2 spreads + 3 CSPs + 3 NCs) &middot; $19,530 income potential &middot; Updated Mar 4 Intraday &middot; Not financial advice
+</div>
+
+</body>
+</html>
